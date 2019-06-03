@@ -7,8 +7,8 @@ type User struct {
 	ID          bson.ObjectId `bson:"_id" json:"id"`
 	Name        string        `bson:"name" json:"name" validate:"required,alpha"`
 	Email string  `bson:"email" json:"email" validate:"required,email"`
+	Password string  `bson:"password" json:"password" validate:"required,alpha"`
 	CoverImage  string        `bson:"cover_image" json:"cover_image"`
-	Bio string        `bson:"bio" json:"bio" validate:"required,alpha"`
-	Location string `bson:"location" json:"location" validate:"required,alpha"`
-
+	Bio string        `bson:"bio" json:"bio"`
+	Location string `bson:"location" json:"location"`
 }
