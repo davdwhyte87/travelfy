@@ -1,5 +1,7 @@
 package controllers
 import (
+	"github.com/joho/godotenv"
+	"log"
 	"net/http"
 	"fmt"
 	"encoding/json"
@@ -8,17 +10,20 @@ import (
 	. "github.com/davdwhyte87/travelfy/dao"
 	. "github.com/davdwhyte87/travelfy/utils"
 	"github.com/dgrijalva/jwt-go"
-	. "github.com/davdwhyte87/travelfy/config"
+	"os"
 	"time"
+
 )
-var config = Config{}
+
 var dao = UserDAO{}
 
 var secreteKey string
 
 func init() {
-	config.Read()
-	secreteKey = config.SecreteKey
+	if err := godotenv.Load(); err != nil {
+		log.Print("No .env file found")
+	}
+	secreteKey, _ = os.LookupEnv("SECRETE_KEY")
 }
 
 
@@ -28,11 +33,15 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user User
 	// fmt.Printf("%v\n", r.Body)
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		fmt.Printf("%v\n", err.Error())
+		//fmt.Printf("%v\n", err.Error())
 		RespondWithError(w, http.StatusBadRequest, "Invalid request m payload")
 		return
 	}
 	user.ID = bson.NewObjectId()
+	// set confirmed to false 
+	b := false
+	user.Confirmed = &b
+	user.IsDriver = false
 	// hash password 
 	var hashError error
 	user.Password, hashError = HashPassword(user.Password)
@@ -45,8 +54,12 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+
+	// remove the password for safety
+	user.Password = "0"
 	RespondWithJson(w, http.StatusCreated, user)
 } 
+
 
 // LoginUser ... This function validates a users identity and then gives the user an auth token
 func LoginUser(w http.ResponseWriter, r *http.Request) {
