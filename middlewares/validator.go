@@ -18,7 +18,6 @@ func handleValidation(w http.ResponseWriter, r *http.Request) bool {
 		RespondWithError(w, http.StatusInternalServerError, "Error reading request body")
 	}
 	var user User
-	print(&user)
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(b))
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		RespondWithError(w, http.StatusBadRequest, "Invalid request payload")

@@ -5,13 +5,14 @@ import (
 	"log"
 	"net/http"
 	"github.com/gorilla/mux"
-	. "github.com/davdwhyte87/travelfy/config"
 	. "github.com/davdwhyte87/travelfy/dao"
 	. "github.com/davdwhyte87/travelfy/controllers"
 	. "github.com/davdwhyte87/travelfy/middlewares"
+	"github.com/joho/godotenv"
+	"os"
 )
 
-var config = Config{}
+
 var dao = DatabaseDAO{}
 
 func AllMoviesEndPoint(w http.ResponseWriter, r *http.Request) {
@@ -38,10 +39,14 @@ func DeleteMovieEndPoint(w http.ResponseWriter, r *http.Request) {
 
 // Parse the configuration file 'config.toml', and establish a connection to DB
 func init() {
-	config.Read()
+	if err := godotenv.Load(); err != nil {
+		log.Print("No .env file found")
+	}
 
-	dao.Server = config.Server
-	dao.Database = config.Database
+	server, _ := os.LookupEnv("SERVER")
+	database, _ := os.LookupEnv("DATABASE")
+	dao.Server = server
+	dao.Database = database
 	dao.Connect()
 }
 
