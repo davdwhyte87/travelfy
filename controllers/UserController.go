@@ -98,3 +98,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 	return
 }
+
+func BecomeDriver(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Become driver")
+}
