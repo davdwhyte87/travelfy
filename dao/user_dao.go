@@ -26,6 +26,7 @@ func (m *UserDAO) FindById(id string) (User, error) {
 // FindByEmail ... get a user by the email
 func (m *UserDAO) FindByEmail(email string) (User, error) {
 	var user User
+
 	err := db.C(COLLECTION).Find(bson.M{"email":email}).One(&user)
 	return user, err
 }
@@ -44,6 +45,6 @@ func (m *UserDAO) Delete(user User) error {
 
 // Update an existing user
 func (m *UserDAO) Update(user User) error {
-	err := db.C(COLLECTION).UpdateId(user.ID, &user)
+	err := db.C(COLLECTION).Update(bson.M{"_id":user.ID}, &user)
 	return err
 }

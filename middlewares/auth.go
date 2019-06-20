@@ -27,8 +27,13 @@ func AuthenticationMiddleware(nextHandler http.Handler) http.Handler {
 		})
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			fmt.Println(claims)
-			ctx := context.WithValue(r.Context(), "email",claims["email"])
+			var email string
+			email, ok = claims["email"].(string)
+			if !ok {
+				RespondWithError(w, http.StatusUnauthorized, "Error converting claim to string")
+				return
+			}
+			ctx := context.WithValue(r.Context(), "email", email)
 			nextHandler.ServeHTTP(w, r.WithContext(ctx))
 		} else {
 			fmt.Println(err)
