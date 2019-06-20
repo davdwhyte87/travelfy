@@ -1,11 +1,10 @@
 package middleware
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
 	. "github.com/davdwhyte87/travelfy/utils"
 	"github.com/dgrijalva/jwt-go"
-	"net/http/httputil"
 	"net/http"
 )
 
@@ -29,18 +28,8 @@ func AuthenticationMiddleware(nextHandler http.Handler) http.Handler {
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			fmt.Println(claims)
-			type Person struct {
-				Id int
-				Name string
-				Age int
-			}
-
-			var p = Person{Id:9, Name:"sjs", Age:2}
-			b, _ := json.Marshal(p)
-			httputil.DumpRequest(r,)
-			r.Write(b)
-
-			nextHandler.ServeHTTP(w, r)
+			ctx := context.WithValue(r.Context(), "email",claims["email"])
+			nextHandler.ServeHTTP(w, r.WithContext(ctx))
 		} else {
 			fmt.Println(err)
 			//RespondWithError(w, http.StatusUnauthorized, "An authorized error occurred")

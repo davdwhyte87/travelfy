@@ -100,5 +100,8 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func BecomeDriver(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Become driver")
+	// get email from request
+	email := r.Context().Value("email")
+	
+	fmt.Printf("%+v\n", email)
 }
