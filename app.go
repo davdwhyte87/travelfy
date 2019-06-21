@@ -43,9 +43,9 @@ func init() {
 		log.Print("No .env file found")
 	}
 
-	server, _ := os.LookupEnv("SERVER")
+	Server, _ := os.LookupEnv("SERVER")
 	database, _ := os.LookupEnv("DATABASE")
-	dao.Server = server
+	dao.Server = Server
 	dao.Database = database
 	dao.Connect()
 }
@@ -55,12 +55,20 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/movies", AllMoviesEndPoint).Methods("GET")
 
-	r.HandleFunc("/user/signup", CreateUser).Methods("POST")
-	r.Use(InputValidationMiddleware)
+	signUpRouter := r.PathPrefix("/api/v1/").Subrouter()
+	signInRouter := r.PathPrefix("/api/v1/").Subrouter()
+	becomeAdriverRouter := r.PathPrefix("/api/v1/").Subrouter()
 
-	r.HandleFunc("/user/signin", LoginUser).Methods("POST")
-	r.Use(InputValidationMiddleware)
-	 
+	signUpRouter.HandleFunc("/user/signup", CreateUser).Methods("POST")
+	signUpRouter.Use(InputValidationMiddleware)
+
+	signInRouter.HandleFunc("/user/signin", LoginUser).Methods("POST")
+	signInRouter.Use(InputValidationMiddleware)
+
+
+	becomeAdriverRouter.HandleFunc("/user/become_driver", BecomeDriver).Methods("GET")
+	becomeAdriverRouter.Use(AuthenticationMiddleware)
+
 	r.HandleFunc("/movies", UpdateMovieEndPoint).Methods("PUT")
 	r.HandleFunc("/movies", DeleteMovieEndPoint).Methods("DELETE")
 	r.HandleFunc("/movies/{id}", FindMovieEndpoint).Methods("GET")

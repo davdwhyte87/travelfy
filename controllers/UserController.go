@@ -1,18 +1,18 @@
 package controllers
+
 import (
-	"github.com/joho/godotenv"
-	"log"
-	"net/http"
-	"fmt"
 	"encoding/json"
-	. "github.com/davdwhyte87/travelfy/models"
-	"gopkg.in/mgo.v2/bson"
+	"fmt"
 	. "github.com/davdwhyte87/travelfy/dao"
+	. "github.com/davdwhyte87/travelfy/models"
 	. "github.com/davdwhyte87/travelfy/utils"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/joho/godotenv"
+	"gopkg.in/mgo.v2/bson"
+	"log"
+	"net/http"
 	"os"
 	"time"
-
 )
 
 var dao = UserDAO{}
@@ -96,5 +96,44 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	} else {
 		RespondWithError(w, http.StatusUnauthorized, "Invalid credentials")
 	}
+	return
+}
+
+func BecomeDriver(w http.ResponseWriter, r *http.Request) {
+	// get email from request
+	requestEmail := r.Context().Value("email")
+	if requestEmail == nil {
+		RespondWithError(w, http.StatusNotFound, "An error occured")
+	}
+
+	//email := fmt.Sprintf("%+v\n", requestEmail)
+	//print(reflect.TypeOf(email).String())
+	//get user with the email
+
+	userData, userDataError := dao.FindByEmail(requestEmail.(string))
+	if userDataError !=nil {
+		fmt.Printf("%+v\n", userDataError)
+		RespondWithError(w, http.StatusNotFound, "User not found")
+		return
+	}
+	//fmt.Printf("%+v\n", userData)
+	userData.IsDriver = true
+	updateErr := dao.Update(userData)
+	if updateErr != nil {
+		RespondWithError(w, http.StatusInternalServerError, "Error updating data")
+		return
+	}
+
+	//returnDatau := map[] {"user":userData, "message":"Successful"}
+	 type ReturnData struct {
+	 	Status int
+	 	Data [1]interface{}
+	 	Error [1]interface{}
+	 }
+	var users [1]interface{}
+	userData.Password = ""
+	users[0] = map[string]User {"user":userData}
+	var returnData = ReturnData{ Status:http.StatusOK, Data:users }
+	RespondWithJson(w, http.StatusCreated, returnData)
 	return
 }

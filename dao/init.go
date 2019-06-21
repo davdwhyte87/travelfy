@@ -16,7 +16,7 @@ var db *mgo.Database
 
 // database collection
 const (
-	COLLECTION = "movies"
+	COLLECTION = "travelfy"
 )
 
 // Connect ... Establish a connection to database
