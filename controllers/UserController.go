@@ -125,14 +125,11 @@ func BecomeDriver(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//returnDatau := map[] {"user":userData, "message":"Successful"}
-	 type ReturnData struct {
-	 	Status int
-	 	Data [1]interface{}
-	 	Error [1]interface{}
-	 }
-	var users [1]interface{}
+
 	userData.Password = ""
-	users[0] = map[string]User {"user":userData}
+	var users = []interface{}{map[string]User {"user":userData}, map[string]string {"name":"sjsklkldnk"}}
+
+	//users[0] = map[string]User {"user":userData}
 	var returnData = ReturnData{ Status:http.StatusOK, Data:users }
 	RespondWithJson(w, http.StatusCreated, returnData)
 	return

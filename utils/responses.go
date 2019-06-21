@@ -5,6 +5,13 @@ import (
 	"encoding/json"
 )
 
+
+type ReturnData struct {
+	Status int
+	Data []interface{}
+	Error []interface{}
+}
+
 // respondWithError ... This function sends error responses
 func RespondWithError(w http.ResponseWriter, code int, msg string) {
 	RespondWithJson(w, code, map[string]string{"error": msg})
