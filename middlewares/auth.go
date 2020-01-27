@@ -1,4 +1,4 @@
-package middleware
+package middlewares
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 )
 
 // AuthenticationMiddleware ... This middle ware validates a token for protected routes
-func AuthenticationMiddleware(nextHandler http.Handler) http.Handler {
+func AuthenticationMiddleware(nextHandler http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authorizationHeader :=r.Header.Get("Authorization")
 		if authorizationHeader == "" {

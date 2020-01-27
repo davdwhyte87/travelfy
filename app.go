@@ -60,14 +60,14 @@ func main() {
 	becomeAdriverRouter := r.PathPrefix("/api/v1/").Subrouter()
 
 	signUpRouter.HandleFunc("/user/signup", CreateUser).Methods("POST")
-	signUpRouter.Use(InputValidationMiddleware)
+	// signUpRouter.Use(InputValidationMiddleware)
 
 	signInRouter.HandleFunc("/user/signin", LoginUser).Methods("POST")
 	signInRouter.Use(InputValidationMiddleware)
 
 
 	becomeAdriverRouter.HandleFunc("/user/become_driver", BecomeDriver).Methods("GET")
-	becomeAdriverRouter.Use(AuthenticationMiddleware)
+	// becomeAdriverRouter.Use(AuthenticationMiddleware)
 
 	r.HandleFunc("/movies", UpdateMovieEndPoint).Methods("PUT")
 	r.HandleFunc("/movies", DeleteMovieEndPoint).Methods("DELETE")
