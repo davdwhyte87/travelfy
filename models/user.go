@@ -11,6 +11,8 @@ type User struct {
 	CoverImage  string        `bson:"cover_image" json:"cover_image"`
 	Bio string        `bson:"bio" json:"bio"`
 	Location string `bson:"location" json:"location"`
-	Confirmed *bool `bson:"confirmed" json:"confirmed"`
+	Confirmed bool `bson:"confirmed" json:"confirmed"`
 	IsDriver bool `bson:"is_driver" json:"is_driver"`
 }
+
+

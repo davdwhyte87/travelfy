@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-    "io/ioutil"
 	DAO "github.com/davdwhyte87/travelfy/dao"
 	Models "github.com/davdwhyte87/travelfy/models"
 	Utils  "github.com/davdwhyte87/travelfy/utils"
@@ -14,7 +13,6 @@ import (
 	"net/http"
 	"os"
 	"time"
-	"bytes"
 )
 
 var dao = DAO.UserDAO{}
@@ -32,26 +30,28 @@ func init() {
 // CreateUser ... This function crea
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	// defer r.Body.Close()
-	// validate user
-	b, _ := ioutil.ReadAll(r.Body)
+
 	var user Models.User
-	// fmt.Printf("%v\n", r.Body)
-	// if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-	// 	fmt.Printf("%v\n", err.Error())
-	// 	Utils.RespondWithError(w, http.StatusBadRequest, "Invalid request m payload")
-	// 	return
-	// }
-	r.Body = ioutil.NopCloser(bytes.NewBuffer(b))
-	ok, errInput := Utils.CreateUserValidator(w,r)
+	// populate the user object with data from requests
+	err := Utils.DecodeReq(r, &user)
+	fmt.Printf("%+v\n", user)
+	// fmt.Printf("%+v\n", err)
+	if err != nil {
+		Utils.RespondWithError(w, http.StatusBadRequest, "This is an invalid request object. Cannot decode on server")
+		return
+	}
+	
+
+	// Validate input data 
+	ok, errInput := Utils.CreateUserValidator(r)
 	if ok == false {
 		print("joll")
 		Utils.RespondWithJson(w, http.StatusBadRequest, errInput)
 		return
 	}
+
 	user.ID = bson.NewObjectId()
-	// set confirmed to false 
-	// b := false
-	// user.Confirmed = &b
+	user.Confirmed = false
 	user.IsDriver = false
 	// hash password 
 	var hashError error
