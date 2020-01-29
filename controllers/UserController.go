@@ -31,6 +31,7 @@ func init() {
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	// defer r.Body.Close()
 
+
 	var user Models.User
 	// populate the user object with data from requests
 	err := Utils.DecodeReq(r, &user)
@@ -66,8 +67,21 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// send the user a welcome email
+	var emialData Utils.EmailData
+	emialData.EmailTo = user.Email
+	emialData.ContentData = map[string]interface{}{"Name":user.Name}
+	emialData.Template = "hello.html"
+	emialData.Title = "Welcome!"
+	mailSent := Utils.SendEmail(emialData)
+	if mailSent {
+		print("mail sent")
+	} else {
+		print("email not sent")
+	}
 	// remove the password for safety
 	user.Password = "0"
+	// return response
 	Utils.RespondWithJson(w, http.StatusCreated, user)
 } 
 

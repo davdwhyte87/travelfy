@@ -12,7 +12,7 @@ import (
 func CreateUserValidator(r *http.Request) (bool, interface{}){
 	rules := govalidator.MapData{
 		"Name": []string{"required", "between:3,50"},
-		"Email":    []string{"required", "min:4", "max:20", "email"},
+		"Email":    []string{"required", "min:4", "max:100", "email"},
 		"Password":      []string{"required","min:4", "max:20" },
 	}
 	// var user Models.User
