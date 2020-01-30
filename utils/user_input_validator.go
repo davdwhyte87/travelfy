@@ -12,7 +12,7 @@ import (
 func CreateUserValidator(r *http.Request) (bool, interface{}){
 	rules := govalidator.MapData{
 		"Name": []string{"required", "between:3,50"},
-		"Email":    []string{"required", "min:4", "max:20", "email"},
+		"Email":    []string{"required", "min:4", "max:100", "email"},
 		"Password":      []string{"required","min:4", "max:20" },
 	}
 	// var user Models.User
@@ -22,6 +22,30 @@ func CreateUserValidator(r *http.Request) (bool, interface{}){
 	// 	"Email":    []string{"Email field is required", "", "", "A valid email is required"},
 	// 	"Password": []string {"Password is required", "", ""},
 	// }
+
+	opts := govalidator.Options{
+		Request:         r,        // request object
+		Rules:           rules,    // rules map
+		Data:            &data,
+	}
+	v := govalidator.New(opts)
+	e := v.ValidateJSON()
+	err := map[string]interface{}{"validationError": e}
+	
+	if len(e) == 0 {
+		return true, err
+	}
+	return false, err
+}
+
+// LoginUserValidator ...
+func LoginUserValidator(r *http.Request) (bool, interface{}){
+	rules := govalidator.MapData{
+		"Name": []string{"required", "between:3,50"},
+		"Email":    []string{"required", "min:4", "max:100", "email"},
+	}
+	// var user Models.User
+	data := make(map[string]interface{}, 0)
 
 	opts := govalidator.Options{
 		Request:         r,        // request object
