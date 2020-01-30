@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	DAO "github.com/davdwhyte87/travelfy/dao"
 	Models "github.com/davdwhyte87/travelfy/models"
@@ -83,6 +82,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	user.Password = "0"
 	// return response
 	Utils.RespondWithJson(w, http.StatusCreated, user)
+	return
 } 
 
 
@@ -90,12 +90,23 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 func LoginUser(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var user Models.User
-	// fmt.Printf("%v\n", r.Body)
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		fmt.Printf("%v\n", err.Error())
-		Utils.RespondWithError(w, http.StatusBadRequest, "Invalid request m payload")
+	// populate the user object with data from requests
+	err := Utils.DecodeReq(r, &user)
+	// fmt.Printf("%+v\n", user)
+	// fmt.Printf("%+v\n", err)
+	if err != nil {
+		Utils.RespondWithError(w, http.StatusBadRequest, "This is an invalid request object. Cannot decode on server")
 		return
 	}
+
+
+	// Validate input data 
+	ok, errInput := Utils.LoginUserValidator(r)
+	if ok == false {
+		Utils.RespondWithJson(w, http.StatusBadRequest, errInput)
+		return
+	}
+
 	// get the user from database
 	userData, userDataError := dao.FindByEmail(user.Email)
 	if userDataError !=nil {
@@ -116,8 +127,8 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 			Utils.RespondWithError(w, http.StatusInternalServerError, "Error generating token")
 			return
 		}
-		returnData := map[string] string{"token": signedString, "message":"Siccessful"}
-		Utils.RespondWithJson(w, http.StatusCreated, returnData)
+		returnData := map[string] string{"token": signedString, "message":"Successful"}
+		Utils.RespondWithJson(w, http.StatusOK, returnData)
 	} else {
 		Utils.RespondWithError(w, http.StatusUnauthorized, "Invalid credentials")
 	}

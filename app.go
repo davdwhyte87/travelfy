@@ -66,7 +66,8 @@ func main() {
 	signInRouter.Use(InputValidationMiddleware)
 
 
-	becomeAdriverRouter.HandleFunc("/user/become_driver", BecomeDriver).Methods("GET")
+	becomeAdriverRouter.HandleFunc("/user/become_driver",
+	 MultipleMiddleware(BecomeDriver, AuthenticationMiddleware)).Methods("GET")
 	// becomeAdriverRouter.Use(AuthenticationMiddleware)
 
 	r.HandleFunc("/movies", UpdateMovieEndPoint).Methods("PUT")
