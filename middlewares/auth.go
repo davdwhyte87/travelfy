@@ -27,13 +27,13 @@ func AuthenticationMiddleware(nextHandler http.HandlerFunc) http.HandlerFunc {
 		})
 
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			var email string
-			email, ok = claims["email"].(string)
+			var id string
+			id, ok = claims["id"].(string)
 			if !ok {
 				RespondWithError(w, http.StatusUnauthorized, "Error converting claim to string")
 				return
 			}
-			ctx := context.WithValue(r.Context(), "email", email)
+			ctx := context.WithValue(r.Context(), "user_id", id)
 			nextHandler.ServeHTTP(w, r.WithContext(ctx))
 		} else {
 			fmt.Println(err)
