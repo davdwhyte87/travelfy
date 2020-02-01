@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+
 	"log"
 	"net/http"
 	"github.com/gorilla/mux"
@@ -14,26 +14,6 @@ import (
 
 
 var dao = DatabaseDAO{}
-
-func AllMoviesEndPoint(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "not implemented yet !")
-}
-
-func FindMovieEndpoint(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "not implemented yet !")
-}
-
-
-
-func UpdateMovieEndPoint(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "not implemented yet !")
-}
-
-func DeleteMovieEndPoint(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "not implemented yet !")
-}
-
-
 
 
 
@@ -53,26 +33,26 @@ func init() {
 
 func main() {
 	r := mux.NewRouter()
-	r.HandleFunc("/movies", AllMoviesEndPoint).Methods("GET")
 
-	signUpRouter := r.PathPrefix("/api/v1/").Subrouter()
-	signInRouter := r.PathPrefix("/api/v1/").Subrouter()
+	v1 := r.PathPrefix("/api/v1").Subrouter()
+	userRouter := v1.PathPrefix("/user").Subrouter()
+	vehicleRouter := v1.PathPrefix("/vehicle").Subrouter()
 	becomeAdriverRouter := r.PathPrefix("/api/v1/").Subrouter()
 
-	signUpRouter.HandleFunc("/user/signup", CreateUser).Methods("POST")
+	userRouter.HandleFunc("/signup", CreateUser).Methods("POST")
 	// signUpRouter.Use(InputValidationMiddleware)
 
-	signInRouter.HandleFunc("/user/signin", LoginUser).Methods("POST")
-	signInRouter.Use(InputValidationMiddleware)
+	userRouter.HandleFunc("/signin", LoginUser).Methods("POST")
+
+	vehicleRouter.HandleFunc("/create",
+	 MultipleMiddleware(CreateVehicle, AuthenticationMiddleware)).Methods("POST")
 
 
 	becomeAdriverRouter.HandleFunc("/user/become_driver",
 	 MultipleMiddleware(BecomeDriver, AuthenticationMiddleware)).Methods("GET")
 	// becomeAdriverRouter.Use(AuthenticationMiddleware)
 
-	r.HandleFunc("/movies", UpdateMovieEndPoint).Methods("PUT")
-	r.HandleFunc("/movies", DeleteMovieEndPoint).Methods("DELETE")
-	r.HandleFunc("/movies/{id}", FindMovieEndpoint).Methods("GET")
+
 	if err := http.ListenAndServe(":3000", r); err != nil {
 		log.Fatal(err)
 	}

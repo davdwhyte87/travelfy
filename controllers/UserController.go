@@ -46,7 +46,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	ok, errInput := Utils.CreateUserValidator(r)
 	if ok == false {
 		print("joll")
-		Utils.RespondWithJson(w, http.StatusBadRequest, errInput)
+		Utils.RespondWithJSON(w, http.StatusBadRequest, errInput)
 		return
 	}
 
@@ -81,7 +81,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	// remove the password for safety
 	user.Password = "0"
 	// return response
-	Utils.RespondWithJson(w, http.StatusCreated, user)
+	Utils.RespondWithJSON(w, http.StatusCreated, user)
 	return
 } 
 
@@ -103,7 +103,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	// Validate input data 
 	ok, errInput := Utils.LoginUserValidator(r)
 	if ok == false {
-		Utils.RespondWithJson(w, http.StatusBadRequest, errInput)
+		Utils.RespondWithJSON(w, http.StatusBadRequest, errInput)
 		return
 	}
 
@@ -128,7 +128,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		returnData := map[string] string{"token": signedString, "message":"Successful"}
-		Utils.RespondWithJson(w, http.StatusOK, returnData)
+		Utils.RespondWithJSON(w, http.StatusOK, returnData)
 	} else {
 		Utils.RespondWithError(w, http.StatusUnauthorized, "Invalid credentials")
 	}
@@ -168,6 +168,6 @@ func BecomeDriver(w http.ResponseWriter, r *http.Request) {
 
 	//users[0] = map[string]User {"user":userData}
 	var returnData = Utils.ReturnData{ Status:http.StatusOK, Data:users }
-	Utils.RespondWithJson(w, http.StatusCreated, returnData)
+	Utils.RespondWithJSON(w, http.StatusCreated, returnData)
 	return
 }
