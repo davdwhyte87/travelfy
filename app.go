@@ -58,6 +58,8 @@ func main() {
 	walletRouter.HandleFunc("/all",
 		MultipleMiddleware(controllers.GetAllWallets, AdminAuthMiddleware)).Methods("GET")
 
+	walletRouter.HandleFunc("/load_wallet",
+		MultipleMiddleware(controllers.LoadWallet, AuthenticationMiddleware)).Methods("POST")
 	// admin routes
 	adminRouter.HandleFunc("/add_lids", MultipleMiddleware(controllers.InfuseLids)).Methods("POST")
 

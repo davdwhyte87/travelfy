@@ -32,6 +32,6 @@ func (m *WalletDAO) FindAll() ([]models.Wallet, error) {
 
 // Update an existing user
 func (m *WalletDAO) Update(wallet models.Wallet) error {
-	err := db.C(COLLECTION).Update(bson.M{"userId":wallet.ID}, &wallet)
+	err := db.C(COLLECTION).Update(bson.M{"_id": wallet.ID}, &wallet)
 	return err
 }

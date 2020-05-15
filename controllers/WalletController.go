@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	// "fmt"
+	"fmt"
 	"net/http"
 	"time"
 	DAO "github.com/davdwhyte87/travelfy/dao"
@@ -85,6 +85,7 @@ func LoadWallet(w http.ResponseWriter, r *http.Request) {
 		wallet.UpdatedAt = dt.Format("01-02-2006 15:04:05")
 		walletUpdateErr := wallerDao.Update(wallet)
 		if walletUpdateErr != nil{
+			fmt.Printf("%v\n", walletUpdateErr)
 			Utils.RespondWithError(w, http.StatusInternalServerError, "Unable to complete transaction")
 			return
 		}
