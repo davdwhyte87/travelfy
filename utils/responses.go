@@ -15,6 +15,7 @@ type ReturnData struct {
 // RespondWithError ... This function sends error responses
 func RespondWithError(w http.ResponseWriter, code int, msg string) {
 	RespondWithJSON(w, code, map[string]string{"error": msg})
+	return
 }
 
 // RespondWithOk ... This function sends error responses

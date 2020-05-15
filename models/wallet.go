@@ -4,10 +4,10 @@ import "gopkg.in/mgo.v2/bson"
 
 // Wallet ... Data representation of a users wallet
 type Wallet struct {
-	ID bson.ObjectId 
-	UserID bson.ObjectId
+	ID     bson.ObjectId
+	UserID bson.ObjectId `bson:"userId"`
 	// Riders []bson.ObjectId
-	
+	Balance   int
 	CreatedAt string
 	UpdatedAt string
 }

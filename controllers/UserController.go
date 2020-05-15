@@ -2,20 +2,21 @@ package controllers
 
 import (
 	"fmt"
-	DAO "github.com/davdwhyte87/travelfy/dao"
-	Models "github.com/davdwhyte87/travelfy/models"
-	Utils  "github.com/davdwhyte87/travelfy/utils"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/joho/godotenv"
-	"gopkg.in/mgo.v2/bson"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	DAO "github.com/davdwhyte87/travelfy/dao"
+	Models "github.com/davdwhyte87/travelfy/models"
+	Utils "github.com/davdwhyte87/travelfy/utils"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/joho/godotenv"
+	"gopkg.in/mgo.v2/bson"
 )
 
 var dao = DAO.UserDAO{}
-
+var walletDao = DAO.WalletDAO{}
 var secreteKey string
 
 func init() {
@@ -25,27 +26,24 @@ func init() {
 	secreteKey, _ = os.LookupEnv("SECRETE_KEY")
 }
 
-
 // CreateUser ... This function crea
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	// defer r.Body.Close()
 
-
 	var user Models.User
 	// populate the user object with data from requests
 	err := Utils.DecodeReq(r, &user)
-	fmt.Printf("%+v\n", user)
+	// fmt.Printf("%+v\n", user)
 	// fmt.Printf("%+v\n", err)
 	if err != nil {
 		Utils.RespondWithError(w, http.StatusBadRequest, "This is an invalid request object. Cannot decode on server")
 		return
 	}
-	
 
-	// Validate input data 
+	// Validate input data
 	ok, errInput := Utils.CreateUserValidator(r)
 	if ok == false {
-		print("joll")
+
 		Utils.RespondWithJSON(w, http.StatusBadRequest, errInput)
 		return
 	}
@@ -53,11 +51,13 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	user.ID = bson.NewObjectId()
 	user.Confirmed = false
 	user.IsDriver = false
-	// hash password 
+	user.Type = 0
+	// hash password
 	var hashError error
 	user.Password, hashError = Utils.HashPassword(user.Password)
 	if hashError != nil {
 		Utils.RespondWithError(w, http.StatusBadRequest, "Error encrypting password")
+		return
 	}
 
 	// save user to database
@@ -66,10 +66,25 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// create a users wallet
+	var wallet Models.Wallet
+	wallet.ID = bson.NewObjectId()
+
+	dt := time.Now()
+
+	wallet.CreatedAt = dt.Format("01-02-2006 15:04:05")
+	wallet.UpdatedAt = wallet.CreatedAt
+	wallet.Balance = 0
+	wallet.UserID = user.ID
+	if creatWalletErr := walletDao.Insert(wallet); err != nil {
+		Utils.RespondWithError(w, http.StatusInternalServerError, creatWalletErr.Error())
+		return
+	}
+
 	// send the user a welcome email
 	var emialData Utils.EmailData
 	emialData.EmailTo = user.Email
-	emialData.ContentData = map[string]interface{}{"Name":user.Name}
+	emialData.ContentData = map[string]interface{}{"Name": user.Name}
 	emialData.Template = "hello.html"
 	emialData.Title = "Welcome!"
 	mailSent := Utils.SendEmail(emialData)
@@ -83,8 +98,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	// return response
 	Utils.RespondWithJSON(w, http.StatusCreated, user)
 	return
-} 
-
+}
 
 // LoginUser ... This function validates a users identity and then gives the user an auth token
 func LoginUser(w http.ResponseWriter, r *http.Request) {
@@ -99,8 +113,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
-	// Validate input data 
+	// Validate input data
 	ok, errInput := Utils.LoginUserValidator(r)
 	if ok == false {
 		Utils.RespondWithJSON(w, http.StatusBadRequest, errInput)
@@ -109,7 +122,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 
 	// get the user from database
 	userData, userDataError := dao.FindByEmail(user.Email)
-	if userDataError !=nil {
+	if userDataError != nil {
 		Utils.RespondWithError(w, http.StatusNotFound, "User not found")
 		return
 	}
@@ -117,17 +130,18 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	if Utils.CheckPasswordHash(user.Password, userData.Password) {
 		token := jwt.New(jwt.SigningMethodHS256)
 		token.Claims = jwt.MapClaims{
-			"exp": time.Now().Add(time.Hour * 72).Unix(),
+			"exp":   time.Now().Add(time.Hour * 72).Unix(),
 			"email": userData.Email,
-			"id": userData.ID,
-			"name": userData.Name,
+			"id":    userData.ID,
+			"type":  userData.Type,
+			"name":  userData.Name,
 		}
 		signedString, tokenErr := token.SignedString([]byte(secreteKey))
-		if tokenErr !=nil {
+		if tokenErr != nil {
 			Utils.RespondWithError(w, http.StatusInternalServerError, "Error generating token")
 			return
 		}
-		returnData := map[string] string{"token": signedString, "message":"Successful"}
+		returnData := map[string]string{"token": signedString, "message": "Successful"}
 		Utils.RespondWithJSON(w, http.StatusOK, returnData)
 	} else {
 		Utils.RespondWithError(w, http.StatusUnauthorized, "Invalid credentials")
@@ -148,7 +162,7 @@ func BecomeDriver(w http.ResponseWriter, r *http.Request) {
 	//get user with the email
 
 	userData, userDataError := dao.FindByEmail(requestEmail.(string))
-	if userDataError !=nil {
+	if userDataError != nil {
 		fmt.Printf("%+v\n", userDataError)
 		Utils.RespondWithError(w, http.StatusNotFound, "User not found")
 		return
@@ -164,10 +178,13 @@ func BecomeDriver(w http.ResponseWriter, r *http.Request) {
 	//returnDatau := map[] {"user":userData, "message":"Successful"}
 
 	userData.Password = ""
-	var users = []interface{}{map[string]Models.User {"user":userData}, map[string]string {"name":"sjsklkldnk"}}
+	var users = []interface{}{map[string]Models.User{"user": userData}, map[string]string{"name": "sjsklkldnk"}}
 
 	//users[0] = map[string]User {"user":userData}
-	var returnData = Utils.ReturnData{ Status:http.StatusOK, Data:users }
+	var returnData = Utils.ReturnData{Status: http.StatusOK, Data: users}
 	Utils.RespondWithJSON(w, http.StatusCreated, returnData)
 	return
 }
+
+
+
